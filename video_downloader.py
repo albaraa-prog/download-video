@@ -57,7 +57,7 @@ class VideoDownloader:
         
         if 'formats' in info:
             for fmt in info['formats']:
-                # Skip formats without video
+                # Skip audio-only formats
                 if fmt.get('vcodec') == 'none':
                     continue
                 
@@ -78,6 +78,10 @@ class VideoDownloader:
                 format_id = fmt.get('format_id', 'N/A')
                 ext = fmt.get('ext', 'N/A')
                 
+                # Check if format has audio
+                has_audio = fmt.get('acodec') != 'none'
+                audio_info = "🔊 With Audio" if has_audio else "🔇 No Audio"
+                
                 formats.append({
                     'format_id': format_id,
                     'resolution': resolution,
@@ -86,11 +90,13 @@ class VideoDownloader:
                     'ext': ext,
                     'filesize': size_str,
                     'format_note': fmt.get('format_note', ''),
-                    'format': fmt
+                    'format': fmt,
+                    'has_audio': has_audio,
+                    'audio_info': audio_info
                 })
         
-        # Sort by height (resolution) in descending order
-        formats.sort(key=lambda x: x['height'], reverse=True)
+        # Sort by height (resolution) in descending order, prioritizing formats with audio
+        formats.sort(key=lambda x: (x['height'], not x['has_audio']), reverse=True)
         return formats
     
     def display_formats(self, formats: List[Dict], video_title: str):
@@ -100,14 +106,19 @@ class VideoDownloader:
         print("Available formats:")
         print("-" * 60)
         
+        # Add "Best with Audio" option at the top
+        print(" 0. 🎯 Best Quality with Audio (Recommended)")
+        print("-" * 60)
+        
         for i, fmt in enumerate(formats, 1):
             resolution = fmt['resolution']
             height = fmt['height']
             ext = fmt['ext']
             size = fmt['filesize']
             note = fmt['format_note']
+            audio_info = fmt['audio_info']
             
-            print(f"{i:2d}. {resolution} ({height}p) - {ext.upper()} - {size}")
+            print(f"{i:2d}. {resolution} ({height}p) - {ext.upper()} - {size} - {audio_info}")
             if note:
                 print(f"    Note: {note}")
         
@@ -117,15 +128,29 @@ class VideoDownloader:
         """Get user's format selection."""
         while True:
             try:
-                choice = input(f"\nSelect format (1-{len(formats)}): ").strip()
+                choice = input(f"\nSelect format (0-{len(formats)}): ").strip()
                 if choice.lower() == 'q':
                     return None
                 
                 choice_num = int(choice)
-                if 1 <= choice_num <= len(formats):
+                if choice_num == 0:
+                    # Return special format for "best with audio"
+                    return {
+                        'format_id': 'bestvideo+bestaudio/best',
+                        'resolution': 'Best Available',
+                        'height': 9999,
+                        'width': 9999,
+                        'ext': 'mp4',
+                        'filesize': 'Unknown',
+                        'format_note': 'Best quality with audio (automatic selection)',
+                        'has_audio': True,
+                        'audio_info': '🔊 With Audio (Best)',
+                        'is_auto': True
+                    }
+                elif 1 <= choice_num <= len(formats):
                     return formats[choice_num - 1]
                 else:
-                    print(f"Please enter a number between 1 and {len(formats)}")
+                    print(f"Please enter a number between 0 and {len(formats)}")
             except ValueError:
                 print("Please enter a valid number or 'q' to quit")
     
@@ -133,11 +158,36 @@ class VideoDownloader:
         """Download the video with the selected format."""
         format_id = selected_format['format_id']
         
+        # Set default output path to downloads folder
+        if not output_path:
+            output_path = os.path.join('downloads', '%(title)s.%(ext)s')
+        elif not os.path.isabs(output_path) and not output_path.startswith('downloads'):
+            # If relative path doesn't start with downloads, put it in downloads folder
+            output_path = os.path.join('downloads', output_path)
+        
         # Set up download options
-        download_opts = {
-            'format': format_id,
-            'outtmpl': output_path or '%(title)s.%(ext)s',
-        }
+        if selected_format.get('is_auto', False):
+            # For automatic "best with audio" selection
+            download_opts = {
+                'format': 'bestvideo+bestaudio/best',
+                'outtmpl': output_path,
+                'merge_output_format': 'mp4',
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',
+                }],
+            }
+        else:
+            # For specific format selection
+            download_opts = {
+                'format': f'{format_id}+bestaudio/best',  # Download video + best audio and merge
+                'outtmpl': output_path,
+                'merge_output_format': 'mp4',  # Ensure output is MP4
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',
+                }],
+            }
         
         if TQDM_AVAILABLE:
             # Custom progress hook for tqdm
@@ -156,6 +206,11 @@ class VideoDownloader:
         
         try:
             print(f"\nDownloading video with format: {selected_format['resolution']} ({selected_format['ext'].upper()})")
+            if selected_format['has_audio']:
+                print("✅ This format includes audio")
+            else:
+                print("⚠️  This format doesn't include audio, but will be merged with best available audio")
+            print(f"📁 Saving to: {output_path}")
             print("This may take a while...")
             
             with yt_dlp.YoutubeDL(download_opts) as ydl:
@@ -172,6 +227,8 @@ class VideoDownloader:
     def run(self):
         """Main execution flow."""
         print("🎬 Video Downloader with Resolution Selection")
+        print("=" * 50)
+        print("📁 Videos will be saved in the 'downloads' folder")
         print("=" * 50)
         
         # Get video URL
@@ -204,7 +261,7 @@ class VideoDownloader:
             return
         
         # Get output path (optional)
-        output_path = input("Enter output path (or press Enter for default): ").strip()
+        output_path = input("Enter output filename (or press Enter for default in downloads folder): ").strip()
         if not output_path:
             output_path = None
         
