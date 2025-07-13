@@ -108,9 +108,10 @@ class VideoDownloader:
         
         # Add "Best with Audio" option at the top
         print(" 0. 🎯 Best Quality with Audio (Recommended)")
+        print(" 1. 🔧 Best Compatible Format (Works everywhere)")
         print("-" * 60)
         
-        for i, fmt in enumerate(formats, 1):
+        for i, fmt in enumerate(formats, 2):
             resolution = fmt['resolution']
             height = fmt['height']
             ext = fmt['ext']
@@ -128,7 +129,7 @@ class VideoDownloader:
         """Get user's format selection."""
         while True:
             try:
-                choice = input(f"\nSelect format (0-{len(formats)}): ").strip()
+                choice = input(f"\nSelect format (0-{len(formats)+1}): ").strip()
                 if choice.lower() == 'q':
                     return None
                 
@@ -136,7 +137,7 @@ class VideoDownloader:
                 if choice_num == 0:
                     # Return special format for "best with audio"
                     return {
-                        'format_id': 'bestvideo+bestaudio/best',
+                        'format_id': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
                         'resolution': 'Best Available',
                         'height': 9999,
                         'width': 9999,
@@ -147,10 +148,24 @@ class VideoDownloader:
                         'audio_info': '🔊 With Audio (Best)',
                         'is_auto': True
                     }
-                elif 1 <= choice_num <= len(formats):
-                    return formats[choice_num - 1]
+                elif choice_num == 1:
+                    # Return special format for "best compatible"
+                    return {
+                        'format_id': 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
+                        'resolution': '720p or lower (Compatible)',
+                        'height': 720,
+                        'width': 1280,
+                        'ext': 'mp4',
+                        'filesize': 'Unknown',
+                        'format_note': 'Best compatible format for all players',
+                        'has_audio': True,
+                        'audio_info': '🔊 With Audio (Compatible)',
+                        'is_compatible': True
+                    }
+                elif 2 <= choice_num <= len(formats)+1:
+                    return formats[choice_num - 2]
                 else:
-                    print(f"Please enter a number between 0 and {len(formats)}")
+                    print(f"Please enter a number between 0 and {len(formats)+1}")
             except ValueError:
                 print("Please enter a valid number or 'q' to quit")
     
@@ -169,24 +184,44 @@ class VideoDownloader:
         if selected_format.get('is_auto', False):
             # For automatic "best with audio" selection
             download_opts = {
-                'format': 'bestvideo+bestaudio/best',
+                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
                 'outtmpl': output_path,
                 'merge_output_format': 'mp4',
                 'postprocessors': [{
-                    'key': 'FFmpegVideoConvertor',
+                    'key': 'FFmpegVideoRemuxer',
                     'preferedformat': 'mp4',
                 }],
+                'postprocessor_args': {
+                    'ffmpeg': ['-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k']
+                }
+            }
+        elif selected_format.get('is_compatible', False):
+            # For "best compatible" selection
+            download_opts = {
+                'format': 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
+                'outtmpl': output_path,
+                'merge_output_format': 'mp4',
+                'postprocessors': [{
+                    'key': 'FFmpegVideoRemuxer',
+                    'preferedformat': 'mp4',
+                }],
+                'postprocessor_args': {
+                    'ffmpeg': ['-c:v', 'libx264', '-preset', 'medium', '-crf', '23', '-c:a', 'aac', '-b:a', '128k']
+                }
             }
         else:
             # For specific format selection
             download_opts = {
-                'format': f'{format_id}+bestaudio/best',  # Download video + best audio and merge
+                'format': f'{format_id}+bestaudio[ext=m4a]/bestaudio/best',  # Download video + best audio and merge
                 'outtmpl': output_path,
                 'merge_output_format': 'mp4',  # Ensure output is MP4
                 'postprocessors': [{
-                    'key': 'FFmpegVideoConvertor',
+                    'key': 'FFmpegVideoRemuxer',
                     'preferedformat': 'mp4',
                 }],
+                'postprocessor_args': {
+                    'ffmpeg': ['-c:v', 'copy', '-c:a', 'aac', '-b:a', '128k']
+                }
             }
         
         if TQDM_AVAILABLE:
@@ -211,6 +246,7 @@ class VideoDownloader:
             else:
                 print("⚠️  This format doesn't include audio, but will be merged with best available audio")
             print(f"📁 Saving to: {output_path}")
+            print("🔊 Audio will be encoded in AAC format for maximum compatibility")
             print("This may take a while...")
             
             with yt_dlp.YoutubeDL(download_opts) as ydl:
@@ -220,6 +256,9 @@ class VideoDownloader:
                 print("\n✅ Download completed!")
             else:
                 print("✅ Download completed!")
+            
+            print("\n💡 Note: If audio doesn't play in some players (VS Code, File Explorer),")
+            print("   try using VLC, Windows Media Player, or other dedicated video players.")
                 
         except Exception as e:
             print(f"\n❌ Error during download: {e}")
