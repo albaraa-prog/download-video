@@ -227,7 +227,8 @@ class VideoDownloaderWindow:
             self.root.after(0, lambda: self._update_video_info_ui(video_info, recommended_formats))
             
         except Exception as e:
-            self.root.after(0, lambda: self._show_error(f"Error fetching video info: {str(e)}"))
+            error_msg = f"Error fetching video info: {str(e)}"
+            self.root.after(0, lambda: self._show_error(error_msg))
     
     def _update_video_info_ui(self, video_info: VideoInfo, formats: list[VideoFormat]):
         """Update UI with video information."""
@@ -304,10 +305,12 @@ class VideoDownloaderWindow:
             if result.success:
                 self.root.after(0, lambda: self._download_completed(result))
             else:
-                self.root.after(0, lambda: self._show_error(f"Download failed: {result.error_message}"))
+                error_msg = f"Download failed: {result.error_message}"
+                self.root.after(0, lambda: self._show_error(error_msg))
                 
         except Exception as e:
-            self.root.after(0, lambda: self._show_error(f"Download error: {str(e)}"))
+            error_msg = f"Download error: {str(e)}"
+            self.root.after(0, lambda: self._show_error(error_msg))
     
     def _download_completed(self, result):
         """Handle download completion."""

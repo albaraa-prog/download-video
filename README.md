@@ -178,4 +178,4 @@ When contributing to this project:
 
 ## 📄 License
 
-This project is licensed under the same terms as the original video downloader.
+MIT

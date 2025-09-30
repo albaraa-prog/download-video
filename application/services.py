@@ -74,6 +74,9 @@ class PathService:
         
         base_path = self.config_repository.get_download_path()
         if filename:
+            # If filename is provided, use it as a template with extension
+            if not filename.endswith('.%(ext)s'):
+                filename = filename + '.%(ext)s'
             return os.path.join(base_path, filename)
         
         return os.path.join(base_path, '%(title)s.%(ext)s')

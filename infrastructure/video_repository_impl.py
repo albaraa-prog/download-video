@@ -33,6 +33,10 @@ class YtDlpVideoRepository(VideoRepository):
             'quiet': True,
             'no_warnings': True,
             'extract_flat': False,
+            'retries': 3,
+            'fragment_retries': 3,
+            'socket_timeout': 30,
+            'ignoreerrors': False,
         }
     
     def get_video_info(self, url: str) -> Optional[VideoInfo]:
@@ -42,7 +46,15 @@ class YtDlpVideoRepository(VideoRepository):
                 info = ydl.extract_info(url, download=False)
                 return self._convert_to_video_info(info)
         except Exception as e:
-            raise VideoInfoException(f"Error extracting video info: {e}")
+            error_msg = str(e)
+            if "HTTP Error 403" in error_msg:
+                raise VideoInfoException("Access denied. This might be due to regional restrictions or rate limiting. Please try again later or use a VPN.")
+            elif "Requested format is not available" in error_msg:
+                raise VideoInfoException("The requested video format is not available. Please try a different format.")
+            elif "Video unavailable" in error_msg:
+                raise VideoInfoException("This video is unavailable. It may have been removed or made private.")
+            else:
+                raise VideoInfoException(f"Error extracting video info: {error_msg}")
     
     def get_available_formats(self, url: str) -> List[VideoFormat]:
         """Get available video formats for a URL."""
@@ -51,7 +63,15 @@ class YtDlpVideoRepository(VideoRepository):
                 info = ydl.extract_info(url, download=False)
                 return self._extract_formats(info)
         except Exception as e:
-            raise VideoInfoException(f"Error extracting formats: {e}")
+            error_msg = str(e)
+            if "HTTP Error 403" in error_msg:
+                raise VideoInfoException("Access denied. This might be due to regional restrictions or rate limiting. Please try again later or use a VPN.")
+            elif "Requested format is not available" in error_msg:
+                raise VideoInfoException("The requested video format is not available. Please try a different format.")
+            elif "Video unavailable" in error_msg:
+                raise VideoInfoException("This video is unavailable. It may have been removed or made private.")
+            else:
+                raise VideoInfoException(f"Error extracting formats: {error_msg}")
     
     def download_video(self, request: DownloadRequest) -> DownloadResult:
         """Download video with specified format."""
@@ -146,11 +166,22 @@ class YtDlpVideoRepository(VideoRepository):
         """Get download options based on the request."""
         format_id = request.selected_format.format_id
         
+        # Ensure output path has proper template format
+        output_path = request.output_path
+        if not output_path.endswith('.%(ext)s'):
+            if '.' in output_path:
+                # Replace existing extension with template
+                base_name = output_path.rsplit('.', 1)[0]
+                output_path = base_name + '.%(ext)s'
+            else:
+                # Add template extension
+                output_path = output_path + '.%(ext)s'
+        
         if request.selected_format.is_auto:
             # For automatic "best with audio" selection
             return {
                 'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-                'outtmpl': request.output_path,
+                'outtmpl': output_path,
                 'merge_output_format': 'mp4',
                 'postprocessors': [{
                     'key': 'FFmpegVideoRemuxer',
@@ -164,7 +195,7 @@ class YtDlpVideoRepository(VideoRepository):
             # For "best compatible" selection
             return {
                 'format': 'best[height<=720][ext=mp4]/best[height<=720]/best[ext=mp4]/best',
-                'outtmpl': request.output_path,
+                'outtmpl': output_path,
                 'merge_output_format': 'mp4',
                 'postprocessors': [{
                     'key': 'FFmpegVideoRemuxer',
@@ -178,7 +209,7 @@ class YtDlpVideoRepository(VideoRepository):
             # For specific format selection
             return {
                 'format': f'{format_id}+bestaudio[ext=m4a]/bestaudio/best',
-                'outtmpl': request.output_path,
+                'outtmpl': output_path,
                 'merge_output_format': 'mp4',
                 'postprocessors': [{
                     'key': 'FFmpegVideoRemuxer',
