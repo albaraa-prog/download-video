@@ -5,7 +5,7 @@ UI components for the video downloader application.
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from typing import List, Callable, Optional
-from ..domain.entities import VideoInfo, VideoFormat
+from domain.entities import VideoInfo, VideoFormat
 
 
 class ModernButton(tk.Button):

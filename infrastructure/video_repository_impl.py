@@ -5,9 +5,9 @@ Implementation of video repository using yt-dlp.
 import os
 import json
 from typing import List, Optional
-from ..domain.entities import VideoInfo, VideoFormat, DownloadRequest, DownloadResult
-from ..domain.repositories import VideoRepository
-from ..domain.exceptions import VideoInfoException, DownloadException
+from domain.entities import VideoInfo, VideoFormat, DownloadRequest, DownloadResult
+from domain.repositories import VideoRepository
+from domain.exceptions import VideoInfoException, DownloadException
 
 try:
     import yt_dlp

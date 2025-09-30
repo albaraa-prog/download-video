@@ -2,16 +2,16 @@
 Dependency injection container for the video downloader application.
 """
 
-from .infrastructure.video_repository_impl import YtDlpVideoRepository
-from .infrastructure.config_repository_impl import JsonConfigurationRepository
-from .application.use_cases import (
+from infrastructure.video_repository_impl import YtDlpVideoRepository
+from infrastructure.config_repository_impl import JsonConfigurationRepository
+from application.use_cases import (
     GetVideoInfoUseCase,
     GetAvailableFormatsUseCase,
     DownloadVideoUseCase,
     ValidateUrlUseCase
 )
-from .application.services import FormatSelectionService, PathService
-from .presentation.main_window import VideoDownloaderWindow
+from application.services import FormatSelectionService, PathService
+from presentation.main_window import VideoDownloaderWindow
 
 
 class DIContainer:

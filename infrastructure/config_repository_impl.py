@@ -5,8 +5,8 @@ Implementation of configuration repository using JSON file storage.
 import json
 import os
 from typing import Optional
-from ..domain.repositories import ConfigurationRepository
-from ..domain.exceptions import ConfigurationException
+from domain.repositories import ConfigurationRepository
+from domain.exceptions import ConfigurationException
 
 
 class JsonConfigurationRepository(ConfigurationRepository):

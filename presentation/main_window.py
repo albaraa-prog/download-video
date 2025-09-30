@@ -6,15 +6,15 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import threading
 from typing import Optional
-from ..domain.entities import VideoInfo, VideoFormat, DownloadRequest
-from ..application.use_cases import (
+from domain.entities import VideoInfo, VideoFormat, DownloadRequest
+from application.use_cases import (
     GetVideoInfoUseCase,
     GetAvailableFormatsUseCase,
     DownloadVideoUseCase,
     ValidateUrlUseCase
 )
-from ..application.services import FormatSelectionService, PathService
-from .ui_components import (
+from application.services import FormatSelectionService, PathService
+from presentation.ui_components import (
     ModernButton,
     ModernEntry,
     VideoInfoFrame,

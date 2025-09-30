@@ -1,146 +1,181 @@
-# Video Downloader Script with Resolution Selection
+# Video Downloader - Clean Architecture Implementation
 
-A Python script that downloads videos from the internet (e.g., YouTube) with interactive resolution selection.
+This is an enhanced version of the video downloader application that follows clean architecture principles and includes a modern GUI.
 
-## Features
+## 🏗️ Architecture Overview
 
-- 🎬 Downloads videos from various platforms (YouTube, Vimeo, etc.)
-- 📊 Lists all available video resolutions and formats
-- 🎯 Interactive format selection
-- 📁 Custom output path support
-- 📈 Download progress tracking (with tqdm)
-- 🛡️ Error handling and graceful failure recovery
+The application is structured using clean architecture principles with clear separation of concerns:
 
-## Installation
+```
+download-video/
+├── domain/                 # Business logic and entities
+│   ├── entities.py        # Domain models (VideoInfo, VideoFormat, etc.)
+│   ├── repositories.py    # Repository interfaces
+│   └── exceptions.py      # Domain exceptions
+├── application/           # Use cases and application services
+│   ├── use_cases.py      # Business use cases
+│   └── services.py       # Application services
+├── infrastructure/        # External dependencies
+│   ├── video_repository_impl.py    # yt-dlp implementation
+│   └── config_repository_impl.py   # JSON config implementation
+├── presentation/          # UI layer
+│   ├── ui_components.py   # Reusable UI components
+│   └── main_window.py     # Main application window
+├── di_container.py        # Dependency injection container
+├── app.py                # Main application entry point
+└── video_downloader.py   # Original CLI version (preserved)
+```
 
-1. **Clone or download this repository**
-2. **Install dependencies:**
+## 🎯 Key Features
 
+### Clean Architecture Benefits
+- **Separation of Concerns**: Each layer has a specific responsibility
+- **Dependency Inversion**: High-level modules don't depend on low-level modules
+- **Testability**: Easy to unit test each component in isolation
+- **Maintainability**: Changes in one layer don't affect others
+- **Extensibility**: Easy to add new features or change implementations
+
+### Modern GUI Features
+- **Clean Interface**: Modern, intuitive design with Windows 11 styling
+- **Real-time Progress**: Live download progress with speed indicators
+- **Format Selection**: Easy-to-use format selection with recommendations
+- **Settings Management**: Configurable download paths and preferences
+- **Error Handling**: User-friendly error messages and validation
+- **Responsive Design**: Adapts to different window sizes
+
+### Technical Improvements
+- **Dependency Injection**: Loose coupling between components
+- **Repository Pattern**: Abstracted data access layer
+- **Use Case Pattern**: Clear business logic encapsulation
+- **Exception Handling**: Comprehensive error management
+- **Configuration Management**: Persistent settings storage
+- **Threading**: Non-blocking UI with background operations
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Python 3.7+
+- pip package manager
+
+### Installation
+1. Clone or download the project
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-   Or install manually:
+### Running the Application
 
-   ```bash
-   pip install yt-dlp>=2023.03.04
-   pip install tqdm>=4.64.0  # Optional, for progress bars
-   ```
-
-## Usage
-
-1. **Run the script:**
-
-   ```bash
-   python video_downloader.py
-   ```
-
-2. **Enter the video URL when prompted**
-
-3. **Select your preferred resolution from the displayed list**
-
-4. **Optionally specify a custom output path**
-
-5. **Wait for the download to complete**
-
-## Example Output
-
-```
-🎬 Video Downloader with Resolution Selection
-==================================================
-Enter video URL: https://www.youtube.com/watch?v=dQw4w9WgXcQ
-
-Fetching video information...
-
-📹 Video: Rick Astley - Never Gonna Give You Up (Official Music Video)
-============================================================
-Available formats:
-------------------------------------------------------------
- 1. 1920x1080 (1080p) - MP4 - 45.2 MB
-    Note: 1080p
- 2. 1280x720 (720p) - MP4 - 28.7 MB
-    Note: 720p
- 3. 854x480 (480p) - MP4 - 18.3 MB
-    Note: 480p
- 4. 640x360 (360p) - MP4 - 12.1 MB
-    Note: 360p
-------------------------------------------------------------
-
-Select format (1-4): 2
-
-Enter output path (or press Enter for default):
-
-Downloading video with format: 1280x720 (720p) - MP4
-This may take a while...
-Downloading: 45.2% - 2.1 MB/s
-✅ Download completed!
+#### GUI Version (Recommended)
+```bash
+python app.py
 ```
 
-## Supported Platforms
+#### CLI Version (Original)
+```bash
+python video_downloader.py
+```
 
-This script works with any platform supported by `yt-dlp`, including:
+## 🎨 GUI Usage
 
-- YouTube
-- Vimeo
-- Dailymotion
-- Facebook
-- Twitter
-- Instagram
-- And many more...
+1. **Enter Video URL**: Paste any supported video URL (YouTube, etc.)
+2. **Get Video Info**: Click "Get Video Info" to fetch video details
+3. **Select Format**: Choose from available formats or use recommendations
+4. **Customize**: Optionally set a custom filename
+5. **Download**: Click "Download Video" to start the download
+6. **Monitor Progress**: Watch real-time download progress
+7. **Settings**: Configure download path and other preferences
 
-## Dependencies
+## 🔧 Configuration
 
-- **yt-dlp** (>=2023.03.04): Core video downloading functionality
-- **tqdm** (>=4.64.0): Progress bar display (optional but recommended)
+The application stores settings in `config.json`:
+- `download_path`: Default download directory
+- `preferred_format`: Preferred video format
+- `ui_theme`: UI theme preference
+- `auto_download`: Auto-download setting
+- `show_progress`: Progress display setting
 
-## Error Handling
+## 🧪 Testing
 
-The script includes comprehensive error handling for:
+The clean architecture makes testing straightforward:
 
-- Invalid URLs
-- Network connectivity issues
-- Unsupported video formats
-- Permission errors
-- Disk space issues
+```python
+# Example unit test for a use case
+def test_get_video_info_use_case():
+    # Mock the repository
+    mock_repo = MockVideoRepository()
+    use_case = GetVideoInfoUseCase(mock_repo)
+    
+    # Test the use case
+    video_info = use_case.execute("https://youtube.com/watch?v=example")
+    assert video_info.title == "Test Video"
+```
 
-## Customization
+## 🔄 Extending the Application
 
-You can modify the script to:
+### Adding New Video Sources
+1. Implement the `VideoRepository` interface
+2. Register in the DI container
+3. No changes needed in other layers
 
-- Change default download options
-- Add custom format filters
-- Implement batch downloading
-- Add audio-only download options
-- Customize output naming patterns
+### Adding New UI Components
+1. Create component in `presentation/ui_components.py`
+2. Use in `presentation/main_window.py`
+3. Follow the existing patterns
 
-## Troubleshooting
+### Adding New Use Cases
+1. Create use case in `application/use_cases.py`
+2. Register in DI container
+3. Use in presentation layer
 
-### Common Issues
+## 📁 File Structure Details
 
-1. **"yt-dlp not found" error:**
+### Domain Layer
+- **entities.py**: Core business objects
+- **repositories.py**: Data access interfaces
+- **exceptions.py**: Domain-specific exceptions
 
-   ```bash
-   pip install yt-dlp
-   ```
+### Application Layer
+- **use_cases.py**: Business operations
+- **services.py**: Application-specific services
 
-2. **Permission errors:**
+### Infrastructure Layer
+- **video_repository_impl.py**: yt-dlp integration
+- **config_repository_impl.py**: Configuration persistence
 
-   - Ensure you have write permissions in the target directory
-   - Try running as administrator (Windows) or with sudo (Linux/Mac)
+### Presentation Layer
+- **ui_components.py**: Reusable UI widgets
+- **main_window.py**: Main application window
 
-3. **Network issues:**
+## 🎯 Design Patterns Used
 
-   - Check your internet connection
-   - Try using a VPN if the content is region-restricted
+1. **Clean Architecture**: Layered architecture with dependency inversion
+2. **Repository Pattern**: Abstracted data access
+3. **Use Case Pattern**: Encapsulated business logic
+4. **Dependency Injection**: Loose coupling
+5. **Observer Pattern**: UI event handling
+6. **Factory Pattern**: Object creation
+7. **Strategy Pattern**: Different format selection strategies
 
-4. **Format not available:**
-   - Some videos may have limited format options
-   - Try a different video or check if the video is still available
+## 🔮 Future Enhancements
 
-## License
+- **Playlist Support**: Download entire playlists
+- **Batch Downloads**: Multiple video downloads
+- **Format Conversion**: Convert between video formats
+- **Metadata Editing**: Edit video metadata
+- **Cloud Storage**: Direct upload to cloud services
+- **API Integration**: REST API for external access
+- **Plugin System**: Extensible plugin architecture
 
-This script is provided as-is for educational and personal use. Please respect copyright laws and terms of service of the platforms you're downloading from.
+## 🤝 Contributing
 
-## Contributing
+When contributing to this project:
+1. Follow clean architecture principles
+2. Write unit tests for new features
+3. Update documentation
+4. Use type hints
+5. Follow existing code style
 
-Feel free to submit issues, feature requests, or pull requests to improve this script.
+## 📄 License
+
+This project is licensed under the same terms as the original video downloader.

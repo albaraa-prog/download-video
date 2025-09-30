@@ -4,9 +4,9 @@ Application services for the video downloader application.
 
 import os
 from typing import List, Optional
-from ..domain.entities import VideoFormat, VideoInfo
-from ..domain.repositories import ConfigurationRepository
-from ..domain.exceptions import ConfigurationException
+from domain.entities import VideoFormat, VideoInfo
+from domain.repositories import ConfigurationRepository
+from domain.exceptions import ConfigurationException
 
 
 class FormatSelectionService:

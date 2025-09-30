@@ -3,9 +3,9 @@ Use cases for the video downloader application.
 """
 
 from typing import List, Optional
-from ..domain.entities import VideoInfo, VideoFormat, DownloadRequest, DownloadResult
-from ..domain.repositories import VideoRepository, ConfigurationRepository
-from ..domain.exceptions import InvalidUrlException, VideoInfoException, FormatNotAvailableException, DownloadException
+from domain.entities import VideoInfo, VideoFormat, DownloadRequest, DownloadResult
+from domain.repositories import VideoRepository, ConfigurationRepository
+from domain.exceptions import InvalidUrlException, VideoInfoException, FormatNotAvailableException, DownloadException
 
 
 class GetVideoInfoUseCase:
