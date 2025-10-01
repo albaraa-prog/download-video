@@ -44,3 +44,15 @@ venv/
 ENV/
 env.bak/
 venv.bak/ 
+
+node_modules/
+
+# Frontend build
+build/
+
+# Backend build
+dist/
+
+# IDEs
+.vscode/
+video-downloader/node_modules/
