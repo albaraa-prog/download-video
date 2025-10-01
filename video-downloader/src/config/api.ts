@@ -1,43 +1,28 @@
-// Frontend-only video downloader configuration
-export const DOWNLOADER_CONFIG = {
-  // Supported video sites
-  SUPPORTED_SITES: [
-    'youtube.com',
-    'youtu.be',
-    'vimeo.com',
-    'twitter.com',
-    'x.com',
-    'instagram.com',
-    'tiktok.com',
-    'facebook.com',
-    'twitch.tv',
-    'dailymotion.com'
-  ],
-  
-  // Default download quality
-  DEFAULT_QUALITY: 'best',
-  
-  // Download directory name
-  DOWNLOAD_FOLDER: 'video-downloads'
-};
+// API Configuration
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// Check if URL is from a supported site
-export const isSupportedSite = (url: string): boolean => {
+// Check if backend is available
+export const isBackendAvailable = async (): Promise<boolean> => {
   try {
-    const urlObj = new URL(url);
-    return DOWNLOADER_CONFIG.SUPPORTED_SITES.some(site => 
-      urlObj.hostname.includes(site)
-    );
-  } catch {
+    const response = await fetch(`${API_BASE_URL}/api/health`, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('Backend not available:', error);
     return false;
   }
 };
 
-// Generate filename from video info
-export const generateFilename = (title: string, extension: string = 'mp4'): string => {
-  const cleanTitle = title
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .substring(0, 50); // Limit length
-  return `${cleanTitle}.${extension}`;
+export const API_ENDPOINTS = {
+  HEALTH: `${API_BASE_URL}/api/health`,
+  GET_INFO: `${API_BASE_URL}/api/get-info`,
+  DOWNLOAD: `${API_BASE_URL}/api/download`,
+  STATUS: `${API_BASE_URL}/api/status`,
+  DOWNLOADS: `${API_BASE_URL}/api/downloads`,
+  DOWNLOAD_FILE: (filename: string) => `${API_BASE_URL}/api/download/${filename}`,
 };

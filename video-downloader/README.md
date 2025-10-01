@@ -1,6 +1,6 @@
-# Video Downloader Pro - React Frontend
+# Video Downloader Pro - Full Stack
 
-A modern, beautiful React frontend for video downloading. Features a stunning dark theme and intuitive user interface. This is a standalone frontend that can connect to any backend API.
+A modern, beautiful React application with Express backend for real video downloading. Features a stunning dark theme, intuitive user interface, and actual video download capabilities using yt-dlp!
 
 ## 🚀 Features
 
@@ -28,23 +28,51 @@ A modern, beautiful React frontend for video downloading. Features a stunning da
 - Node.js 16.0.0 or higher
 - npm or yarn package manager
 - Modern web browser with ES6+ support
+- **yt-dlp** (for video downloading) - See [INSTALL_YTDLP.md](INSTALL_YTDLP.md) for installation instructions
 
 ## 🛠️ Installation
 
-1. **Open terminal/command prompt in the video-downloader directory**
+### **Option 1: Quick Setup (Windows)**
+```bash
+cd video-downloader
+setup.bat
+npm start
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### **Option 2: Manual Setup**
+```bash
+cd video-downloader
 
-3. **Start the React app**
-   ```bash
-   npm start
-   ```
+# Install all dependencies (frontend + backend)
+npm run install-all
 
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
+# Start both servers automatically
+npm start
+```
+
+### **Option 3: Individual Setup**
+```bash
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+cd backend && npm install && cd ..
+
+# Start both servers
+npm start
+```
+
+## 🚀 **Running the App**
+
+After installation, simply run:
+```bash
+npm start
+```
+
+This will automatically:
+- Start the backend server on `http://localhost:5000`
+- Start the React app on `http://localhost:3000`
+- Open your browser to the app
 
 ## ⚠️ Troubleshooting
 
@@ -68,18 +96,16 @@ del package-lock.json
 npm install
 ```
 
-## 🔌 Backend API
+## 🎯 How It Works
 
-This frontend expects a backend API with the following endpoints:
+This is a **full-stack** application that:
 
-- `GET /api/health` - Health check
-- `POST /api/get-info` - Get video information
-- `POST /api/download` - Start video download
-- `GET /api/status` - Get download status
-- `GET /api/downloads` - List downloaded files
-- `GET /api/download/:filename` - Download a file
-
-The API URL can be configured in `src/config/api.ts` or by setting the `REACT_APP_API_URL` environment variable.
+- **Real video analysis** - Uses yt-dlp to extract actual video information
+- **Actual downloads** - Downloads real video files to your computer
+- **Backend server** - Express server with yt-dlp integration
+- **Supports 1000+ sites** - YouTube, Vimeo, Twitter, Instagram, TikTok, and more
+- **Real-time progress** - Shows actual download progress with smooth animations
+- **File management** - View and download your downloaded files
 
 ## 🏗️ Project Structure
 
@@ -104,6 +130,10 @@ video-downloader/
 │   ├── App.tsx
 │   ├── index.tsx
 │   └── index.css
+├── backend/
+│   ├── server.js
+│   ├── package.json
+│   └── downloads/ (created automatically)
 ├── package.json
 ├── tailwind.config.js
 └── README.md

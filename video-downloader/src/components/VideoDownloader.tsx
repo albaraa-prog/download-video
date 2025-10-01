@@ -16,16 +16,18 @@ interface VideoInfo {
   view_count: number;
   description: string;
   thumbnail: string;
-  formats: Array<{
-    format_id: string;
-    resolution: string;
-    height: number;
-    width: number;
-    extension: string;
-    file_size: string;
-    has_audio: boolean;
-    format_note: string;
-  }>;
+  formats: VideoFormat[];
+}
+
+interface VideoFormat {
+  format_id: string;
+  resolution: string;
+  height: number;
+  width: number;
+  extension: string;
+  file_size: string;
+  has_audio: boolean;
+  format_note: string;
 }
 
 const VideoDownloader: React.FC = () => {
@@ -38,23 +40,10 @@ const VideoDownloader: React.FC = () => {
   const { downloadStatus, startDownload } = useDownload();
   const urlInputRef = useRef<HTMLInputElement>(null);
 
-  const isValidUrl = (string: string): boolean => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
 
   const analyzeVideo = async () => {
     if (!url.trim()) {
       toast.error('Please enter a video URL');
-      return;
-    }
-
-    if (!isValidUrl(url)) {
-      toast.error('Please enter a valid URL');
       return;
     }
 

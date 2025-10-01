@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { videoDownloader, VideoInfo, VideoFormat } from '../services/videoDownloader';
+import { API_ENDPOINTS } from '../config/api';
 
 interface DownloadStatus {
   in_progress: boolean;
@@ -78,7 +78,7 @@ function downloadReducer(state: DownloadStatus, action: DownloadAction): Downloa
 export function DownloadProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(downloadReducer, initialState);
 
-  // Poll for download status
+  // Poll for download status from backend
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -109,6 +109,10 @@ export function DownloadProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           console.error('Error checking download status:', error);
+          dispatch({
+            type: 'ERROR_DOWNLOAD',
+            error: 'Failed to check download status',
+          });
         }
       }, 1000);
     }

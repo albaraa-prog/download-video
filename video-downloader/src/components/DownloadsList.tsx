@@ -147,16 +147,19 @@ const DownloadsList: React.FC = () => {
                   </div>
                 </div>
                 
-                <motion.a
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  href={API_ENDPOINTS.DOWNLOAD_FILE(file.name)}
-                  download
+                  onClick={() => {
+                    // Trigger download from backend
+                    window.open(API_ENDPOINTS.DOWNLOAD_FILE(file.name), '_blank');
+                    toast.success('Download started!');
+                  }}
                   className="btn btn-primary btn-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 >
                   <Download className="w-4 h-4" />
                   <span className="ml-2">Download</span>
-                </motion.a>
+                </motion.button>
               </motion.div>
             ))}
           </div>

@@ -8,7 +8,6 @@ import Header from './components/Header';
 import VideoDownloader from './components/VideoDownloader';
 import DownloadsList from './components/DownloadsList';
 import Footer from './components/Footer';
-import BackendStatus from './components/BackendStatus';
 import { DownloadProvider } from './context/DownloadContext';
 
 const queryClient = new QueryClient({
@@ -42,8 +41,6 @@ function App() {
             </motion.main>
             
             <Footer />
-            
-            <BackendStatus />
             
             <Toaster
               position="top-right"
